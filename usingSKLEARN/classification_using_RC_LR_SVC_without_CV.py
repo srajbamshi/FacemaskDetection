@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import RidgeClassifier, LogisticRegression
 from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 import cv2
@@ -30,25 +31,23 @@ Xtrain, Xtest, ytrain, ytest = train_test_split(flat_gray_images, labels, test_s
 
 
 # create a list of models to be tested
-models = [
-          # ('Ridge Classifier', RidgeClassifier()),
-          ('Logistic Regressor,', LogisticRegression(solver='liblinear')),
+models = [('Ridge Classifier', RidgeClassifier()),
+          ('Logistic Regressor', LogisticRegression(solver='liblinear')),
           ('SVC', SVC(gamma=0.01))]
 
 # evaluate each model in turn
-results = []
+accuracy_scores = []
 names = []
 for name, model in models:
-    kfold = StratifiedKFold(n_splits=10, random_state=1, shuffle=True)
-    cv_results = cross_val_score(model, Xtrain, ytrain, cv=kfold, scoring='accuracy')
-    results.append(cv_results)
+    model.fit(Xtrain, ytrain)
+    ypred = model.predict(Xtest)
+    score = accuracy_score(ytest, ypred)
+    accuracy_scores.append(score)
     names.append(name)
-    print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
-
-# Compare Algorithms
-plt.boxplot(results, labels=names)
-plt.title('Algorithm Comparison')
-plt.show()
+    print('%s: %f' % (name, score))
 
 results = np.array([names, accuracy_scores])
-np.save('results_with_cv.npy', results)
+np.save('results_without_cv.npy', results)
+
+
+
